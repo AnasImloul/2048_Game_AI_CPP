@@ -1,4 +1,21 @@
-#include<stdio.h>
+#include<vector>
+
+
+#ifndef SHOW
+#define SHOW
+
+void show_grid(const long *grid, int rows, int columns){
+	std::string result = "";
+	for (int i = 0; i<rows*columns; i++){
+		result = result + std::to_string(grid[i]) + (((i==0 && columns != 1) || (i+1)%columns) ? " " : "\n");
+	}
+	std::cout << result << std::endl;
+}
+
+#endif
+
+#ifndef MOVE
+#define MOVE
 
 struct Move{
 
@@ -7,6 +24,7 @@ struct Move{
 	bool blocked;
 	long *grid;
 	int index;
+	
 	
 	Move(int merged, long score, bool blocked, long *grid, int index){
 		this->merged = merged;
@@ -39,222 +57,53 @@ struct Move{
 	}
 };
 
-
-Move up(long* grid, const int &rows, const int &columns){
-
-
-	int merged = 0;
-
-	long score = 0;
-
-	bool blocked = true;
-
-	for (int col = 0; col < columns; col++){ 
-		for (int row = 0; row < rows; row++){
-			if (grid[columns * row + col] == 0){
-				blocked = false;
-				continue;
-			}
-
-			int k = row;
-			bool merge = true;
-
-			while (k > 0){
-
-				long current = (grid[col + columns * k]);
-				long previous = (grid[col + columns * (k - 1)]);
-
-				if (previous == 0){
-					
-					grid[col + columns * k] = previous;
-					grid[col + columns * (k-1)] = current;
-					
-					blocked = false;
-				}
-
-				if (merge and previous == current){
-					grid[col + columns * (k-1)] += current;
-
-					score += (current << 1);
-
-					grid[col + columns * k] = 0;
-
-					merged += 1;
-
-					blocked = false;
-
-					merge = false;
-				}
-
-				k -= 1;
-			}
-		}
-	}
-	return Move(merged,score,blocked,grid,0);	
-}
+#endif
 
 
+#ifndef MOVETRACKER
+#define MOVETRACKER
 
-Move down(long* grid, const int &rows, const int &columns){
 
+struct MoveTracker{
 
 	int merged = 0;
-
 	long score = 0;
-
-	bool blocked = true;
-
-	for (int col = 0; col < columns; col++){ 
-		for (int row = rows - 1; row >= 0; row--){
-			if (grid[columns * row + col] == 0){
-				blocked = false;
-				continue;
-			}
-
-			int k = row;
-			bool merge = true;
-
-			while (k < rows - 1){
-
-				long current = (grid[col + columns * k]);
-				long previous = (grid[col + columns * (k + 1)]);
-
-				if (previous == 0){
-					
-					grid[col + columns * k] = previous;
-					grid[col + columns * (k+1)] = current;
-					
-					blocked = false;
-				}
-
-				if (merge and previous == current){
-					grid[col + columns * (k+1)] += current;
-
-					score += (current << 1);
-
-					grid[col + columns * k] = 0;
-
-					merged += 1;
-
-					blocked = false;
-
-					merge = false;
-				}
-
-				k += 1;
-			}
-		}
+	bool blocked = false;
+	long* grid;
+	std::vector<int> path;
+	
+	MoveTracker(long* grid, int merged, long score, bool blocked){
+		this->merged = merged;
+		this->score = score;
+		this->blocked = blocked;
+		
+		this->grid = grid;
+		
+		path.push_back(-1);
 	}
-	return Move(merged,score,blocked,grid,0);	
-}
-
-
-Move left(long* grid, const int &rows, const int &columns){
-
-
-	int merged = 0;
-
-	long score = 0;
-
-	bool blocked = true;
-
-	for (int row = 0; row < rows; row++){ 
-		for (int col = 0; col < columns; col++){
-			if (grid[columns * row + col] == 0){
-				blocked = false;
-				continue;
-			}
-			
-
-			int k = col;
-			bool merge = true;
-
-			while (k > 0){
-
-				long current = grid[columns * row + k];
-				long previous = grid[columns * row + (k-1)];
-
-				if (previous == 0){
-					
-					grid[columns * row + k] = previous;
-					grid[columns * row + (k-1)] = current;
-					
-					blocked = false;
-				}
-
-				if (merge and previous == current){
-					grid[columns * row + (k-1)] += current;
-
-					score += (current << 1);
-
-					grid[columns * row + k] = 0;
-
-					merged += 1;
-
-					blocked = false;
-
-					merge = false;
-				}
-
-				k -= 1;
-			}
-		}
+	
+	int Compare (const MoveTracker other) {
+		return 
+			((merged > other.merged) || (merged == other.merged)&&(score > other.merged)) ? 1:
+		
+						    (merged == other.merged)&&(score == other.merged) ? 0:
+						
+												       -1;
 	}
-	return Move(merged,score,blocked,grid,0);	
-}
-
-
-Move right(long* grid, const int &rows, const int &columns){
-
-
-	int merged = 0;
-
-	long score = 0;
-
-	bool blocked = true;
-
-	for (int row = 0; row < rows; row++){ 
-		for (int col = columns - 1; col >= 0; col--){
-			if (grid[columns * row + col] == 0){
-				blocked = false;
-				continue;
-			}
-
-			int k = col;
-			bool merge = true;
-
-			while (k < columns - 1){
-
-				long current = grid[columns * row + k];
-				long previous = grid[columns * row + (k+1)];
-				if (previous == 0){
-					
-					grid[columns * row + k] = previous;
-					grid[columns * row + (k+1)] = current;
-					
-					blocked = false;
-				}
-
-				if (merge and previous == current){
-					grid[columns * row + (k+1)] += current;
-
-					score += (current << 1);
-
-					grid[columns * row + k] = 0;
-
-					merged += 1;
-
-					blocked = false;
-
-					merge = false;
-				}
-
-				k += 1;
-			}
-		}
+	
+	
+	bool operator == (const MoveTracker other) const {
+  		return (merged == other.merged)&&(score == other.score);
 	}
-	return Move(merged,score,blocked,grid,0);	
-}
 
+	bool operator < (const MoveTracker other) const {
+  		return ((other.merged > merged) || (other.merged == merged)&&(other.score > score));   
+	}
+	
+	bool operator > (const MoveTracker other) const {
+  		return ((merged > other.merged) || (merged == other.merged)&&(score > other.score));   
+	}
 
+};
 
+#endif
