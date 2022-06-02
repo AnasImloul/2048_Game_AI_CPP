@@ -1,8 +1,10 @@
+#include "dynamic.cpp"
 #include "move.cpp"
 #include <cstring>
+#include <iostream>
+
 
 typedef Move (*Moves) (long* grid, const int &rows, const int &columns);
-
 
 
 int digit(long number){
@@ -16,6 +18,7 @@ int digit(long number){
 
 
 class Grid{
+public:
 	int rows;
 	int columns;
 	
@@ -23,42 +26,107 @@ class Grid{
 	
 	long score;
 	
-	Moves moves[4] = {up,down,left,right};
+	int empty_slots;
 	
-	public:
+	Moves moves[4] = {Up,Down,Left,Right};
+	
+	
 	Grid(int rows, int columns){
 		this->rows = rows;
 		this->columns = columns;
 		
-		this->grid = (long*) malloc(sizeof(long)*4*4);	
+		grid = (long*) malloc(sizeof(long)*rows*columns);
+		memset(grid, 0,sizeof(grid));	
 		
 		score = 0;
-	}
-	
-	
-	void Up(){
-		Move move = up(grid, rows, columns);
 		
-		this->grid = move.grid;
-		score += move.score;
+		empty_slots = rows*columns;
 	}
 	
-	void Down(){
-		Move move = down(grid, rows, columns);
+	
+	void up(){
+		Move move = Up(grid, rows, columns);
 		
-		this->grid = move.grid;
+		empty_slots += move.merged;
+		
+		grid = move.grid;
+		
 		score += move.score;
+		add();
 	}
 	
-	void Left(){
-		Move move = left(grid, rows, columns);
+	void down(){
+		Move move = Down(grid, rows, columns);
+	
+		empty_slots += move.merged;
 		
-		this->grid = move.grid;
+		grid = move.grid;
 		score += move.score;
+		add();
 	}
+	
+	void left(){
+		Move move = Left(grid, rows, columns);
+		
+		empty_slots += move.merged;
+		
+		grid = move.grid;
+		score += move.score;
+		add();
+	}
+	
+	void right(){
+		Move move = Right(grid, rows, columns);
+		
+		empty_slots += move.merged;
+		
+		grid = move.grid;
+		score += move.score;
+		add();
+		
+	}
+	
+	void add(){
+		random_add(grid, rows, columns,empty_slots,2);
+	}
+	
+	
+	int next_move(int depth){
+		
+		
+		MoveTracker best_move = maxsearch(grid, rows, columns, empty_slots, moves, 4, depth);
+		
+		std::cout << best_move.path.size() << std::endl;
+		
+		return best_move.path[1];
+	}
+	
+	
+	void play(long rounds, int depth, bool show = false){
+		for (int round = 1; round <= rounds; rounds++){
+		
+			if (show) show_grid(grid,rows,columns);
+
+			int next = next_move(depth);
+
+			Move move = moves[next](grid, rows, columns);
+
+			empty_slots += move.merged;
+
+			grid = move.grid;
+			score += move.score;
+
+			if (move.blocked){
+				std::cout << "Reached a total score of " << score << " after playing " << std::to_string(round) << " rounds." << std::endl;
+				break;
+			}
+
+			add();
+		}
+	}
+	
 	
 	private:
-	
 	friend std::ostream& operator<<(std::ostream& os, const Grid& g){
 		std::string result = "";
 		for (int i = 0; i<g.rows*g.columns; i++){
@@ -67,7 +135,5 @@ class Grid{
 		result += "Score: " + std::to_string(g.score);
 		
 		return os << result;
-        
 	}
-	
 };
