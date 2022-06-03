@@ -4,14 +4,12 @@
 #include <iostream>
 #include <stdlib.h> 
 #include<vector>
+#include<string>
 
-void show_vector(std::vector<int> path){
-	for (auto i: path) std::cout << i << ' ';
-	
-	std::cout << std::endl;
-}
+
 
 typedef Move (*Moves) (long* grid, const int &rows, const int &columns);
+
 
 
 int digit(long number){
@@ -21,6 +19,44 @@ int digit(long number){
 		number = number / 10;
 	}
 	return digits;
+}
+
+int max_digits(long* grid, int rows, int columns){
+	int size = rows*columns;
+
+	int digits = 0;
+	for (int i = 0; i<size; i++){
+	
+		if (digit(grid[i]) > digits) digits = digit(grid[i]);
+	}
+	return digits;
+}
+
+
+std::string white_spaces(int n){
+	std::string s = "";
+	for (int i=0;i<n;i++) s += ' ';
+	return s;
+}
+
+
+void show_vector(std::vector<int> path){
+	for (auto i: path) std::cout << i << ' ';
+	
+	std::cout << std::endl;
+}
+
+
+void show_grid(long *grid, int rows, int columns){
+
+	int max_digit = max_digits(grid, rows, columns);
+
+	std::string result = "";
+	for (int i = 0; i<rows*columns; i++){
+		result = result + std::to_string(grid[i]) + white_spaces(max_digit - digit(grid[i])) + (((i==0 && columns != 1) || (i+1)%columns) ? " " : "\n");
+	}
+
+	std::cout << result;
 }
 
 
@@ -91,12 +127,12 @@ public:
 	}
 	
 	
-	int next_move(int depth){ 
+	int next_move(int depth){
+
 	
 	MoveTracker best_move = maxsearch(grid, rows, columns, moves, 4, depth);
-	
-	show_vector(best_move.path);
-	return best_move.path[-1]; }
+
+	return best_move.path[best_move.path.size() - 1]; }
 	
 	
 	void play(long rounds, int depth, bool show = false){
@@ -127,9 +163,11 @@ public:
 	
 	private:
 	friend std::ostream& operator<<(std::ostream& os, const Grid& g){
+		int max_digit = max_digits(g.grid, g.rows, g.columns);
+		
 		std::string result = "";
 		for (int i = 0; i<g.rows*g.columns; i++){
-			result = result + std::to_string(g.grid[i]) + (((i==0 && g.columns != 1) || (i+1)%g.columns) ? " " : "\n");
+			result = result + std::to_string(g.grid[i]) + white_spaces(2 + max_digit - digit(g.grid[i])) + (((i==0 && g.columns != 1) || (i+1)%g.columns) ? " " : "\n");
 		}
 		result += "Score: " + std::to_string(g.score);
 		
