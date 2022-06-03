@@ -316,7 +316,6 @@ MoveTracker maxsearch(long *grid, int rows, int columns, Moves* moves, int moves
             
             Move next_move = moves[i](next_grid, rows, columns);
             
-            move_blocked = move_blocked && blocked;
                        
                 merged = next_move.merged;
         	score = next_move.score;
@@ -325,6 +324,7 @@ MoveTracker maxsearch(long *grid, int rows, int columns, Moves* moves, int moves
         	
         	
         	if (!blocked){
+        		move_blocked = false;
         		
         		random_add(next_grid, rows, columns, 2);
         		
@@ -341,8 +341,9 @@ MoveTracker maxsearch(long *grid, int rows, int columns, Moves* moves, int moves
         	}
         	
         }
-        if (move_blocked){max_score.path.push_back(rand()%moves_count);}
-    }
+        
+        if (move_blocked) max_score.path.push_back(rand()%moves_count);
+}
 
     
     return max_score;   
