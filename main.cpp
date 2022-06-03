@@ -12,14 +12,9 @@ int64_t get_time(){
 int main(){	
 	srand(time(0));
 	
-	Grid grid = Grid(5,5);
+	Grid grid = Grid(4,4);
 	
 	int64_t start = get_time();
-	
-	for (int i = 0; i<2;i++){
-		grid.add();
-	}
-
 
 	grid.play(1'000'000'000, 6, true);
 
