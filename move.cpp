@@ -1,18 +1,7 @@
 #include<vector>
 
 
-#ifndef SHOW
-#define SHOW
 
-void show_grid(const long *grid, int rows, int columns){
-	std::string result = "";
-	for (int i = 0; i<rows*columns; i++){
-		result = result + std::to_string(grid[i]) + (((i==0 && columns != 1) || (i+1)%columns) ? " " : "\n");
-	}
-	std::cout << result;
-}
-
-#endif
 
 #ifndef MOVE
 #define MOVE
