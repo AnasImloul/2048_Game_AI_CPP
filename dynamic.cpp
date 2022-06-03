@@ -1,6 +1,7 @@
 #include "move.cpp"
 #include<algorithm>
 #include<vector>
+#include<cstring>
 #include<iostream>
 
 
@@ -8,18 +9,13 @@
 typedef Move (*Moves) (long* grid, const int &rows, const int &columns);
 
 
-void copy(const long* src, long* dest){
-	long size = sizeof(src)/sizeof(src[0]);
-	for (int i = 0; i<size; i++){
-	
-		dest[i] = src[i];
-	
-	}
-}
-
 
 
 Move Up(long* grid, const int &rows, const int &columns){
+
+	//show_grid(grid, rows, columns);
+	
+	//std::cout << std::endl;
 
 
 	int merged = 0;
@@ -31,7 +27,7 @@ Move Up(long* grid, const int &rows, const int &columns){
 	for (int col = 0; col < columns; col++){ 
 		for (int row = 0; row < rows; row++){
 			if (grid[columns * row + col] == 0){
-				blocked = false;
+				
 				continue;
 			}
 
@@ -71,7 +67,7 @@ Move Up(long* grid, const int &rows, const int &columns){
 	}
 
 	
-	return Move(merged,score,blocked,grid,0);	
+	return Move(merged,score,blocked,grid);	
 }
 
 
@@ -88,7 +84,7 @@ Move Down(long* grid, const int &rows, const int &columns){
 	for (int col = 0; col < columns; col++){ 
 		for (int row = rows - 1; row >= 0; row--){
 			if (grid[columns * row + col] == 0){
-				blocked = false;
+				
 				continue;
 			}
 
@@ -126,7 +122,7 @@ Move Down(long* grid, const int &rows, const int &columns){
 			}
 		}
 	}
-	return Move(merged,score,blocked,grid,1);	
+	return Move(merged,score,blocked,grid);	
 }
 
 
@@ -142,7 +138,7 @@ Move Left(long* grid, const int &rows, const int &columns){
 	for (int row = 0; row < rows; row++){ 
 		for (int col = 0; col < columns; col++){
 			if (grid[columns * row + col] == 0){
-				blocked = false;
+				
 				continue;
 			}
 			
@@ -181,7 +177,7 @@ Move Left(long* grid, const int &rows, const int &columns){
 			}
 		}
 	}
-	return Move(merged,score,blocked,grid,2);	
+	return Move(merged,score,blocked,grid);	
 }
 
 
@@ -197,7 +193,7 @@ Move Right(long* grid, const int &rows, const int &columns){
 	for (int row = 0; row < rows; row++){ 
 		for (int col = columns - 1; col >= 0; col--){
 			if (grid[columns * row + col] == 0){
-				blocked = false;
+				
 				continue;
 			}
 
@@ -234,127 +230,120 @@ Move Right(long* grid, const int &rows, const int &columns){
 			}
 		}
 	}
-	return Move(merged,score,blocked,grid,3);	
+	return Move(merged,score,blocked,grid);	
 }
 
 
 
-void random_add(long* grid, int rows, int columns, int &slots, long value){
-	srand(time(0));
+void random_add(long* grid, int rows, int columns, long value){
 	
-	if (slots>0){
 	
 	int size = rows*columns;
 	
-
+	int start = rand()%size;
 	
-	int* empty_slots = (int*) malloc(slots*sizeof(int));
-	
-	
-	
-	int index = 0;
 	for (int i = 0; i<size; i++){
-		if (grid[i] == 0){ 
-			empty_slots[index] = i;
-			index++;
+		if (grid[(start + i)%size] == 0){ 
+			grid[(start + i)%size] = value;
+			break;
 		}
-	}
-	
-	
-	grid[empty_slots[rand()%slots]] = value;
-	
-	
-	slots -= 1;
-	
-	
 	}
 }
 
 
-MoveTracker maxsearch(long *grid, int rows, int columns, int &slots, Moves* moves, int moves_count, int depth=6){
-	
-    
+
+MoveTracker maxsearch(long *grid, int rows, int columns, Moves* moves, int moves_count, int depth=6){
+
     long temp_grid[rows*columns];      
-    copy(grid,temp_grid);
-    
-    MoveTracker max_score = MoveTracker(temp_grid, -1, -1, false);
+    for (int i = 0; i<rows*columns; i++){
+	
+		temp_grid[i] = grid[i];
+	    }
+	    
+	    
+    MoveTracker max_score = MoveTracker(temp_grid, -1, -1, true);
     
     int merged;
     long score;
     bool blocked;
     
-    
     if (depth == 1){
-    
 	
         for (int i = 0; i<moves_count; i++){
         	
             long next_grid[rows*columns];
+            memset(next_grid, 0, sizeof(next_grid));
            
-            copy(grid,next_grid);
+            for (int i = 0; i<rows*columns; i++){
+	
+		next_grid[i] = grid[i];
+	    }
+     
             
             Move next_move = moves[i](next_grid, rows, columns);
-           
+            
+                             
             MoveTracker move_tracker = MoveTracker(next_grid, next_move.merged, next_move.score, next_move.blocked);
+            
+            //std::cout << move_tracker.blocked << " " << move_tracker.merged << " " << move_tracker.score << std::endl;
             
             move_tracker.path.push_back(i);
            
-            max_score = std::max(max_score, move_tracker);
-            
+            if (move_tracker > max_score) max_score = move_tracker;            
         }
+        
+        //std::cout << std::endl;
+        //std::cout << max_score.blocked << " " << max_score.merged << " " << max_score.score << std::endl;
+        //std::cout << std::endl;
 
    } else {
-   
    	std::vector<MoveTracker> next_states;
 
-    	bool move_blocked = false;
+    	bool move_blocked = true;
     	
     	
     	
     	for (int i = 0; i<moves_count; i++){
         	
             long next_grid[rows*columns];
+            memset(next_grid, 0, sizeof(next_grid));
            
-            copy(grid,next_grid);
+            for (int i = 0; i<rows*columns; i++){
+	
+		next_grid[i] = grid[i];
+	    }
+            
             
             Move next_move = moves[i](next_grid, rows, columns);
             
-            move_blocked = move_blocked || blocked;
-           
-            MoveTracker move_tracker = MoveTracker(next_grid, next_move.merged, next_move.score, next_move.blocked);
-            
-            move_tracker.path.push_back(i);
-            
-            next_states.push_back(move_tracker);
-           
-        }
-        
-        
-        sort(next_states.begin(), next_states.end(), std::greater<MoveTracker>());
-        
-        
-        if (!move_blocked) next_states.pop_back();
-        
-        
-        
-        
-        for (const auto &state : next_states){
-        	merged = state.merged;
-        	score = state.score;
-        	blocked = state.blocked;
+            move_blocked = move_blocked && blocked;
+                       
+                merged = next_move.merged;
+        	score = next_move.score;
+        	blocked = next_move.blocked;
+        	
+        	
         	
         	if (!blocked){
-        		//random_add(state.grid, rows, columns, slots, 2);
-        	
-        		MoveTracker next_depth = maxsearch(state.grid, rows, columns, slots, moves, moves_count, depth - 1);
+        		
+        		random_add(next_grid, rows, columns, 2);
+        		
+          		
+        		MoveTracker next_depth = maxsearch(next_grid, rows, columns, moves, moves_count, depth - 1);
+        		
         		
         		next_depth.merged += merged;
         		next_depth.score += score;
-        		next_depth.path.push_back(state.path[0]);
+        		next_depth.blocked = blocked;
+        		next_depth.path.push_back(i);
         		
-        		max_score = std::max(max_score, next_depth);	
+        		if (next_depth > max_score) max_score = next_depth;
         	}
+        	
         }
+        if (move_blocked){max_score.path.push_back(rand()%moves_count);}
     }
+
+    
     return max_score;   
 }
