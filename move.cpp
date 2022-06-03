@@ -9,7 +9,7 @@ void show_grid(const long *grid, int rows, int columns){
 	for (int i = 0; i<rows*columns; i++){
 		result = result + std::to_string(grid[i]) + (((i==0 && columns != 1) || (i+1)%columns) ? " " : "\n");
 	}
-	std::cout << result << std::endl;
+	std::cout << result;
 }
 
 #endif
@@ -23,15 +23,15 @@ struct Move{
 	long score;
 	bool blocked;
 	long *grid;
-	int index;
+
 	
 	
-	Move(int merged, long score, bool blocked, long *grid, int index){
+	Move(int merged, long score, bool blocked, long *grid){
 		this->merged = merged;
 		this->score = score;
 		this->blocked = blocked;
 		this->grid = grid;
-		this->index = index;
+	
 	}
 	
 	int Compare (const Move other) {
@@ -78,30 +78,62 @@ struct MoveTracker{
 		this->blocked = blocked;
 		
 		this->grid = grid;
-		
-		path.push_back(-1);
+
 	}
 	
 	int Compare (const MoveTracker other) {
-		return 
-			((merged > other.merged) || (merged == other.merged)&&(score > other.merged)) ? 1:
+	
+		if (blocked < other.blocked) return 1;
 		
-						    (merged == other.merged)&&(score == other.merged) ? 0:
-						
-												       -1;
+		if (blocked == other.blocked){
+		
+			if (merged > other.merged) return 1;
+			
+			if (merged == other.merged){
+				if (score > other.score) return 1;
+				
+				if (score == other.score) return 0;
+			}
+		}
+		return -1;
 	}
 	
 	
 	bool operator == (const MoveTracker other) const {
-  		return (merged == other.merged)&&(score == other.score);
+  		return (blocked == other.blocked)&&(merged == other.merged)&&(score == other.score);
 	}
+	
 
 	bool operator < (const MoveTracker other) const {
-  		return ((other.merged > merged) || (other.merged == merged)&&(other.score > score));   
+  		if (blocked > other.blocked) return true;
+		
+		if (blocked == other.blocked){
+		
+			if (merged < other.merged) return true;
+			
+			if (merged == other.merged){
+				if (score < other.score) return true;
+				
+				if (score == other.score) return false;
+			}
+		}
+		return true;
 	}
 	
 	bool operator > (const MoveTracker other) const {
-  		return ((merged > other.merged) || (merged == other.merged)&&(score > other.score));   
+  		if (blocked < other.blocked) return true;
+		
+		if (blocked == other.blocked){
+		
+			if (merged > other.merged) return true;
+			
+			if (merged == other.merged){
+				if (score > other.score) return true;
+				
+				if (score == other.score) return false;
+			}
+		}
+		return false;
 	}
 
 };
