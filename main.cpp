@@ -4,9 +4,7 @@
 #include "move.cpp"
 #include <algorithm>
 
-int64_t get_time(){
-	return std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
-}
+int64_t get_time(){ return std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now().time_since_epoch()).count(); }
 
 
 int main(){	
