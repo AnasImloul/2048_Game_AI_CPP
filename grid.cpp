@@ -2,7 +2,14 @@
 #include "move.cpp"
 #include <cstring>
 #include <iostream>
+#include <stdlib.h> 
+#include<vector>
 
+void show_vector(std::vector<int> path){
+	for (auto i: path) std::cout << i << ' ';
+	
+	std::cout << std::endl;
+}
 
 typedef Move (*Moves) (long* grid, const int &rows, const int &columns);
 
@@ -26,8 +33,6 @@ public:
 	
 	long score;
 	
-	int empty_slots;
-	
 	Moves moves[4] = {Up,Down,Left,Right};
 	
 	
@@ -39,15 +44,11 @@ public:
 		memset(grid, 0,sizeof(grid));	
 		
 		score = 0;
-		
-		empty_slots = rows*columns;
 	}
 	
 	
 	void up(){
 		Move move = Up(grid, rows, columns);
-		
-		empty_slots += move.merged;
 		
 		grid = move.grid;
 		
@@ -58,7 +59,7 @@ public:
 	void down(){
 		Move move = Down(grid, rows, columns);
 	
-		empty_slots += move.merged;
+		
 		
 		grid = move.grid;
 		score += move.score;
@@ -68,7 +69,6 @@ public:
 	void left(){
 		Move move = Left(grid, rows, columns);
 		
-		empty_slots += move.merged;
 		
 		grid = move.grid;
 		score += move.score;
@@ -78,7 +78,7 @@ public:
 	void right(){
 		Move move = Right(grid, rows, columns);
 		
-		empty_slots += move.merged;
+		
 		
 		grid = move.grid;
 		score += move.score;
@@ -87,31 +87,30 @@ public:
 	}
 	
 	void add(){
-		random_add(grid, rows, columns,empty_slots,2);
+		random_add(grid, rows, columns,2);
 	}
 	
 	
-	int next_move(int depth){
-		
-		
-		MoveTracker best_move = maxsearch(grid, rows, columns, empty_slots, moves, 4, depth);
-		
-		std::cout << best_move.path.size() << std::endl;
-		
-		return best_move.path[1];
-	}
+	int next_move(int depth){ 
+	
+	MoveTracker best_move = maxsearch(grid, rows, columns, moves, 4, depth);
+	
+	show_vector(best_move.path);
+	return best_move.path[-1]; }
 	
 	
 	void play(long rounds, int depth, bool show = false){
-		for (int round = 1; round <= rounds; rounds++){
+		for (int round = 1; round <= rounds; round++){
 		
-			if (show) show_grid(grid,rows,columns);
+			if (show){
+				show_grid(grid,rows,columns);
+				std::cout << "Score: " << score << "\n\n";
+				}
 
 			int next = next_move(depth);
 
 			Move move = moves[next](grid, rows, columns);
-
-			empty_slots += move.merged;
+			
 
 			grid = move.grid;
 			score += move.score;
