@@ -79,6 +79,8 @@ public:
 		grid = (long*) malloc(sizeof(long)*rows*columns);
 		memset(grid, 0,sizeof(grid));	
 		
+		for (int i = 0; i<2;i++) add();
+		
 		score = 0;
 	}
 	
