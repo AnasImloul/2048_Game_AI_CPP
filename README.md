@@ -4,8 +4,8 @@ Functional AI for solving the old mobile game 2048.
 # Run the script
 On linux, and after installing the g++ cpp compiler run the two following commands in the terminal
 
-  1) g++ -o main main.cpp
-  2) ./main
+  1)) g++ -o main main.cpp
+  2)) ./main
 
 # Max score
 with this naive algorithm the AI can reach up to 80K in score
