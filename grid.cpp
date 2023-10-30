@@ -1,178 +1,284 @@
-#include "dynamic.cpp"
-#include "move.cpp"
-#include <cstring>
-#include <iostream>
-#include <stdlib.h> 
-#include<vector>
-#include<string>
+//
+// Created by user on 27/10/2023.
+//
+
+#include "grid.h"
+#include "cstring"
+#include "iostream"
 
 
-
-typedef Move (*Moves) (long* grid, const int &rows, const int &columns);
-
-
-
-int digit(long number){
-	int digits = 1;
-	while (number >= 10){
-		digits++;
-		number = number / 10;
-	}
-	return digits;
+grid::grid() {
+    memset(tiles, 0, sizeof(tiles));
+    score = 0;
+    empty = SIZE * SIZE;
+    add();
+    add();
 }
 
-int max_digits(long* grid, int rows, int columns){
-	int size = rows*columns;
-
-	int digits = 0;
-	for (int i = 0; i<size; i++){
-	
-		if (digit(grid[i]) > digits) digits = digit(grid[i]);
-	}
-	return digits;
+grid::grid(const grid &g) {
+    memcpy(tiles, g.tiles, sizeof(tiles));
+    score = g.score;
+    empty = g.empty;
+    blocked = g.blocked;
 }
 
+grid::grid(int8_t tiles[SIZE][SIZE], int64_t score) {
+    memcpy(this->tiles, tiles, sizeof(this->tiles));
+    this->score = score;
+    empty = 0;
+    for (int i = 0; i < SIZE; i++) {
+        for (int j : tiles[i]) {
+            if (j == 0) empty++;
+        }
+    }
+    blocked = false;
 
-std::string white_spaces(int n){
-	std::string s = "";
-	for (int i=0;i<n;i++) s += ' ';
-	return s;
 }
 
-
-void show_vector(std::vector<int> path){
-	for (auto i: path) std::cout << i << ' ';
-	
-	std::cout << std::endl;
+void grid::show() {
+    for (auto & tile : tiles) {
+        for (int j : tile) {
+            std::cout << (j != 0 ? 1 << j : 0) << " ";
+        }
+        std::cout << std::endl;
+    }
+    std::cout << std::endl;
 }
 
+bool grid::up() {
+    blocked = true; // if the grid is blocked, the game is over
 
-void show_grid(long *grid, int rows, int columns){
+    for (int col = 0; col < SIZE; col++) {
 
-	int max_digit = max_digits(grid, rows, columns);
+        int last = -1;
+        bool merged = false;
+        for (int row = 0; row < SIZE; row++) {
+            // if the tile is empty, skip it
+            if (tiles[row][col] == 0) {
+                blocked = false;
+                continue;
+            }
 
-	std::string result = "";
-	for (int i = 0; i<rows*columns; i++){
-		result = result + std::to_string(grid[i]) + white_spaces(max_digit - digit(grid[i])) + (((i==0 && columns != 1) || (i+1)%columns) ? " " : "\n");
-	}
+            // if this is the first tile, move it to the first row
+            if (last == -1) {
+                last = 0; // set the tile to the first one
+                if (row != 0) {
+                    tiles[last][col] = tiles[row][col];
+                    tiles[row][col] = 0;
+                    blocked = false;
+                }
+                continue;
+            }
 
-	std::cout << result;
+            // if the tile is the same as the last one, merge them
+            if (tiles[last][col] == tiles[row][col] && !merged) {
+                tiles[last][col]++;
+                tiles[row][col] = 0;
+                score += (1 << tiles[last][col]);
+                empty++;
+                blocked = false;
+                merged = true;
+                continue;
+            }
+
+            // if the tile is different from the last one, move it
+            if (last + 1 != row) {
+                tiles[++last][col] = tiles[row][col];
+                tiles[row][col] = 0;
+                blocked = false;
+                merged = false;
+                continue;
+            }
+
+            last = row;
+        }
+    }
+    return !blocked;
 }
 
+bool grid::down() {
+    blocked = true; // if the grid is blocked, the game is over
 
-class Grid{
-public:
-	int rows;
-	int columns;
-	
-	long* grid;
-	
-	long score;
-	
-	Moves moves[4] = {Up,Down,Left,Right};
-	
-	
-	Grid(int rows, int columns){
-		this->rows = rows;
-		this->columns = columns;
-		
-		grid = (long*) malloc(sizeof(long)*rows*columns);
-		memset(grid, 0,sizeof(grid));	
-		
-		for (int i = 0; i<2;i++) add();
-		
-		score = 0;
-	}
-	
-	
-	void up(){
-		Move move = Up(grid, rows, columns);
-		
-		grid = move.grid;
-		
-		score += move.score;
-		add();
-	}
-	
-	void down(){
-		Move move = Down(grid, rows, columns);
-	
-		
-		
-		grid = move.grid;
-		score += move.score;
-		add();
-	}
-	
-	void left(){
-		Move move = Left(grid, rows, columns);
-		
-		
-		grid = move.grid;
-		score += move.score;
-		add();
-	}
-	
-	void right(){
-		Move move = Right(grid, rows, columns);
-		
-		
-		
-		grid = move.grid;
-		score += move.score;
-		add();
-		
-	}
-	
-	void add(){
-		random_add(grid, rows, columns,2);
-	}
-	
-	
-	int next_move(int depth){
+    for (int col = 0; col < SIZE; col++) {
 
-	
-	MoveTracker best_move = maxsearch(grid, rows, columns, moves, 4, depth);
+        int last = -1;
+        bool merged = false;
+        for (int row = SIZE - 1; row >= 0; row--) {
+            // if the tile is empty, skip it
+            if (tiles[row][col] == 0) {
+                blocked = false;
+                continue;
+            }
 
-	return best_move.path[best_move.path.size() - 1]; }
-	
-	
-	void play(long rounds, int depth, bool show = false){
-		for (int round = 1; round <= rounds; round++){
-		
-			if (show){
-				show_grid(grid,rows,columns);
-				std::cout << "Score: " << score << "\n\n";
-				}
+            // if this is the first tile, move it to the first row
+            if (last == -1) {
+                last = SIZE - 1; // set the tile to the first one
+                if (row != SIZE - 1) {
+                    tiles[last][col] = tiles[row][col];
+                    tiles[row][col] = 0;
+                    blocked = false;
+                }
+                continue;
+            }
 
-			int next = next_move(depth);
+            // if the tile is the same as the last one, merge them
+            if (tiles[last][col] == tiles[row][col] && !merged) {
+                tiles[last][col]++;
+                tiles[row][col] = 0;
+                score += (1 << tiles[last][col]);
+                empty++;
+                blocked = false;
+                merged = true;
+                continue;
+            }
 
-			Move move = moves[next](grid, rows, columns);
-			
+            // if the tile is different from the last one, move it
+            if (last - 1 != row) {
+                tiles[--last][col] = tiles[row][col];
+                tiles[row][col] = 0;
+                blocked = false;
+                merged = false;
+                continue;
+            }
 
-			grid = move.grid;
-			score += move.score;
+            last = row;
+        }
+    }
+    return !blocked;
+}
 
-			if (move.blocked){
-				std::cout << "Reached a total score of " << score << " after playing " << std::to_string(round) << " rounds." << std::endl;
-				break;
-			}
+bool grid::left() {
+    blocked = true; // if the grid is blocked, the game is over
 
-			add();
-		}
-	}
-	
-	
-	private:
-	friend std::ostream& operator<<(std::ostream& os, const Grid& g){
-		int max_digit = max_digits(g.grid, g.rows, g.columns);
-		
-		std::string result = "";
-		for (int i = 0; i<g.rows*g.columns; i++){
-			result = result + std::to_string(g.grid[i]) + white_spaces(2 + max_digit - digit(g.grid[i])) + (((i==0 && g.columns != 1) || (i+1)%g.columns) ? " " : "\n");
-		}
-		result += "Score: " + std::to_string(g.score);
-		
-		return os << result;
-	}
-};
+    for (int row = 0; row < SIZE; row++) {
+
+        int last = -1;
+        bool merged = false;
+        for (int col = 0; col < SIZE; col++) {
+            // if the tile is empty, skip it
+            if (tiles[row][col] == 0) {
+                blocked = false;
+                continue;
+            }
+
+            // if this is the first tile, move it to the first row
+            if (last == -1) {
+                last = 0; // set the tile to the first one
+                if (col != 0) {
+                    tiles[row][last] = tiles[row][col];
+                    tiles[row][col] = 0;
+                    blocked = false;
+                }
+                continue;
+            }
+
+            // if the tile is the same as the last one, merge them
+            if (tiles[row][last] == tiles[row][col] && !merged) {
+                tiles[row][last]++;
+                tiles[row][col] = 0;
+                score += (1 << tiles[last][col]);
+                empty++;
+                blocked = false;
+                merged = true;
+                continue;
+            }
+
+            // if the tile is different from the last one, move it
+            if (last + 1 != col) {
+                tiles[row][++last] = tiles[row][col];
+                tiles[row][col] = 0;
+                blocked = false;
+                merged = false;
+                continue;
+            }
+
+            last = col;
+        }
+    }
+    return !blocked;
+}
+
+bool grid::right() {
+    blocked = true; // if the grid is blocked, the game is over
+
+    for (int row = 0; row < SIZE; row++) {
+
+        int last = -1;
+        bool merged = false;
+        for (int col = SIZE - 1; col >= 0; col--) {
+            // if the tile is empty, skip it
+            if (tiles[row][col] == 0) {
+                blocked = false;
+                continue;
+            }
+
+            // if this is the first tile, move it to the first row
+            if (last == -1) {
+                last = SIZE - 1; // set the tile to the first one
+                if (col != SIZE - 1) {
+                    tiles[row][last] = tiles[row][col];
+                    tiles[row][col] = 0;
+                    blocked = false;
+                }
+                continue;
+            }
+
+            // if the tile is the same as the last one, merge them
+            if (tiles[row][last] == tiles[row][col] && !merged) {
+                tiles[row][last]++;
+                tiles[row][col] = 0;
+                score += (1 << tiles[last][col]);
+                empty++;
+                blocked = false;
+                merged = true;
+                continue;
+            }
+
+            // if the tile is different from the last one, move it
+            if (last - 1 != col) {
+                tiles[row][--last] = tiles[row][col];
+                tiles[row][col] = 0;
+                blocked = false;
+                merged = false;
+                continue;
+            }
+
+            last = col;
+        }
+    }
+    return !blocked;
+}
+
+bool grid::add() {
+
+    if (empty == 0) return false;
+
+    int index = rand() % (SIZE * SIZE), row, col;
+
+    for (int i = 0; i < SIZE * SIZE; i++) {
+        row = index / SIZE;
+        col = index % SIZE;
+
+        if (tiles[row][col] == 0) {
+            tiles[row][col] = 1;
+            empty--;
+            return true;
+        }
+        index = (index + 1) % (SIZE * SIZE);
+    }
+
+    return false;
+
+}
+
+bool grid::move(int direction) {
+    bool moved = false;
+
+    if (direction == UP) moved = up();
+    else if (direction == DOWN) moved = down();
+    else if (direction == LEFT) moved = left();
+    else if (direction == RIGHT) moved = right();
+
+    if (moved) add();
+    return moved;
+}

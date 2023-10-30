@@ -1,20 +1,29 @@
-#include<iostream>
-#include "grid.cpp"
-#include<chrono>
-#include "move.cpp"
-#include <algorithm>
+#include <ctime>
+#include "iostream"
+#include "grid.h"
+#include "move.h"
 
-int64_t get_time(){ return std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now().time_since_epoch()).count(); }
+void fastIO() {
+    std::ios_base::sync_with_stdio(false);
+    std::cin.tie(nullptr);
+    std::cout.tie(nullptr);
+}
 
+int main() {
+    std::srand(std::time(nullptr));
+    fastIO();
 
-int main(){	
-	srand(time(0));
-	
-	Grid grid = Grid(4,4);
-	
-	int64_t start = get_time();
+    grid g;
 
-	grid.play(1'000'000'000, 6, true);
+    int move;
+    do {
+        int bestScore = 0;
+        int bestDir = -1;
+        bestMove(g, 12, bestScore, bestDir);
+        move = bestDir;
+        g.move(move);
+        g.show();
+        std::cout << "Score: " << g.getScore() << std::endl;
+    } while (move != -1);
 
-	std::cout << get_time() - start << std::endl;
 }

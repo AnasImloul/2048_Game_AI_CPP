@@ -1,130 +1,38 @@
-#include<vector>
+//
+// Created by user on 29/10/2023.
+//
 
+#include "move.h"
+#include <iostream>
 
+#define max(a, b) ((a) > (b) ? (a) : (b))
 
+inline int evaluate(const grid& g) {
+    return (g.getEmpty() << 16) + g.getScore();
+}
 
-#ifndef MOVE
-#define MOVE
+int bestMove(const grid& g, int depth, int &bestScore, int &bestDir, int move) {
 
-struct Move{
+    if (depth == 0 || g.isBlocked()) {
+        return evaluate(g);
+    }
 
-	int merged;
-	long score;
-	bool blocked;
-	long *grid;
+    if (move == -1) {
+        // if the move is -1, we are at the root of the tree
+        // we will have dynamic depth based on the number of empty tiles
+        // the less empty tiles, the more depth
+        depth = max(depth * (SIZE - g.getEmpty() / SIZE) / SIZE, 4);
+    }
 
-	
-	
-	Move(int merged, long score, bool blocked, long *grid){
-		this->merged = merged;
-		this->score = score;
-		this->blocked = blocked;
-		this->grid = grid;
-	
-	}
-	
-	int Compare (const Move other) {
-		return 
-			((merged > other.merged) || (merged == other.merged)&&(score > other.merged)) ? 1:
-		
-						    (merged == other.merged)&&(score == other.merged) ? 0:
-						
-												       -1;
-	}
-	
-	
-	bool operator == (const Move other) const {
-  		return (merged == other.merged)&&(score == other.score);
-	}
+    for (int dir : DIRECTIONS) {
+        grid g1(g);
+        g1.move(dir);
+        int score = bestMove(g1, depth - 1, bestScore, bestDir, (move == -1 ? dir : move));
+        if (score > bestScore) {
+            bestScore = score;
+            bestDir = move;
+        }
+    }
 
-	bool operator < (const Move other) const {
-  		return ((other.merged > merged) || (other.merged == merged)&&(other.score > score));   
-	}
-	
-	bool operator > (const Move other) const {
-  		return ((merged > other.merged) || (merged == other.merged)&&(score > other.score));   
-	}
-};
-
-#endif
-
-
-#ifndef MOVETRACKER
-#define MOVETRACKER
-
-
-struct MoveTracker{
-
-	int merged = 0;
-	long score = 0;
-	bool blocked = false;
-	long* grid;
-	std::vector<int> path;
-	
-	MoveTracker(long* grid, int merged, long score, bool blocked){
-		this->merged = merged;
-		this->score = score;
-		this->blocked = blocked;
-		
-		this->grid = grid;
-
-	}
-	
-	int Compare (const MoveTracker other) {
-	
-		if (blocked < other.blocked) return 1;
-		
-		if (blocked == other.blocked){
-		
-			if (merged > other.merged) return 1;
-			
-			if (merged == other.merged){
-				if (score > other.score) return 1;
-				
-				if (score == other.score) return 0;
-			}
-		}
-		return -1;
-	}
-	
-	
-	bool operator == (const MoveTracker other) const {
-  		return (blocked == other.blocked)&&(merged == other.merged)&&(score == other.score);
-	}
-	
-
-	bool operator < (const MoveTracker other) const {
-  		if (blocked > other.blocked) return true;
-		
-		if (blocked == other.blocked){
-		
-			if (merged < other.merged) return true;
-			
-			if (merged == other.merged){
-				if (score < other.score) return true;
-				
-				if (score == other.score) return false;
-			}
-		}
-		return true;
-	}
-	
-	bool operator > (const MoveTracker other) const {
-  		if (blocked < other.blocked) return true;
-		
-		if (blocked == other.blocked){
-		
-			if (merged > other.merged) return true;
-			
-			if (merged == other.merged){
-				if (score > other.score) return true;
-				
-				if (score == other.score) return false;
-			}
-		}
-		return false;
-	}
-
-};
-
-#endif
+    return bestScore;
+}
