@@ -17,10 +17,8 @@ int main() {
 
     int move;
     do {
-        int bestScore = 0;
-        int bestDir = -1;
-        bestMove(g, 12, bestScore, bestDir);
-        move = bestDir;
+        int a = 0;
+        move = move::bestMove(g, 6);
         g.move(move);
         g.show();
         std::cout << "Score: " << g.getScore() << std::endl;

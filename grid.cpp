@@ -11,6 +11,7 @@ grid::grid() {
     memset(tiles, 0, sizeof(tiles));
     score = 0;
     empty = SIZE * SIZE;
+    blocked = false;
     add();
     add();
 }
