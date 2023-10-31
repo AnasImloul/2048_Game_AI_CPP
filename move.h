@@ -13,7 +13,7 @@ namespace move {
     inline int64_t evaluate(grid &g);
 
     namespace {
-        void bestMoveHelper(grid& g, int depth, int64_t &bestScore, int &bestDir, int move, int& calls);
+        void bestScore(grid& g, int depth, int64_t& currentBestScore);
     }
 
 }

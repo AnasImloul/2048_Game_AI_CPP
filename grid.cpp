@@ -55,10 +55,16 @@ void grid::show() {
             long long value = (tiles[i * SIZE + j] != 0 ? (1 << tiles[i * SIZE + j]) : 0);
             std::cout << value << std::string(maxLength1 - length(value), ' ') << " ";
         }
-        for (int i = 0; i < 1 + maxLength1 / 3; i++)
+        if (i + 1 == SIZE) {
             std::cout << std::endl;
+        } else {
+            for (int i = 0; i < 1 + maxLength1 / 3; i++)
+                std::cout << std::endl;
+        }
     }
-    std::cout << std::endl;
+    std::cout << "Score: " << score << std::endl;
+
+
 }
 
 bool grid::up() {

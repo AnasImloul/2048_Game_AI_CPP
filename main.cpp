@@ -12,17 +12,17 @@ void fastIO() {
 }
 
 int main() {
-    std::srand(std::time(nullptr));
+    // std::srand(std::time(nullptr));
     fastIO();
 
     grid g;
 
     int move;
     do {
-        move = move::bestMove(g, 8);
+        move = move::bestMove(g, 12);
         g.move(move);
         g.show();
-        std::cout << "Score: " << g.getScore() << std::endl;
+        std::cout << std::endl;
     } while (move != -1);
 
 }
