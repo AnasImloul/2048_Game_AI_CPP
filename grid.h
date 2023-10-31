@@ -38,17 +38,17 @@ public:
 
     bool move(int direction);
 
-    inline int32_t getScore() const { return score; }
+    inline int8_t getTile(int i, int j) { return tiles[i][j]; }
+
+    inline int64_t getScore() const { return score; }
     inline int16_t getEmpty() const { return empty; }
-    inline bool isBlocked() const { return blocked; }
 
 private:
 
     bool add();
 
     int8_t tiles[SIZE][SIZE]; // tiles on the grid (0 = empty, 2^x = tile with value x)
-    int32_t score; // current score
+    int64_t score; // current score
     int16_t empty; // number of empty tiles
-    bool blocked; // if the grid is blocked, the game is over
 
 };
