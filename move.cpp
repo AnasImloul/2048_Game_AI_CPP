@@ -8,15 +8,15 @@
 #define max(a, b) ((a) > (b) ? (a) : (b))
 
 namespace move {
-    int bestMove(const grid& g, int depth) {
-        int bestScore = 0, bestDir = -1;
-        bestMoveHelper(g, depth, bestScore, bestDir, -1);
+    int bestMove(grid& g, int depth) {
+        int64_t bestScore = 0;
+        int bestDir = -1, calls = 0;
+        bestMoveHelper(g, depth, bestScore, bestDir, -1, calls);
+        std::cout << "calls: " << calls << std::endl;
         return bestDir;
     }
 
-    inline int evaluate(const grid& g) {
-        return (g.getEmpty() << 16) + g.getScore();
-    }
+    inline int64_t evaluate(grid& g) { return (g.getEmpty() << 16) + g.getScore(); }
 
     namespace {
         int bestMoveHelper(const grid& g, int depth, int &bestScore, int &bestDir, int move) {

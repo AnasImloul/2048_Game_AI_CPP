@@ -22,7 +22,7 @@ class grid {
 public:
     grid();
 
-    grid(int8_t tiles[SIZE][SIZE], int64_t score);
+    grid(int8_t tiles[SIZE * SIZE], int64_t score);
 
     grid(const grid &g);
 
@@ -38,8 +38,6 @@ public:
 
     bool move(int direction);
 
-    inline int8_t getTile(int i, int j) { return tiles[i][j]; }
-
     inline int64_t getScore() const { return score; }
     inline int16_t getEmpty() const { return empty; }
 
@@ -47,7 +45,7 @@ private:
 
     bool add();
 
-    int8_t tiles[SIZE][SIZE]; // tiles on the grid (0 = empty, 2^x = tile with value x)
+    int8_t tiles[SIZE * SIZE]; // tiles on the grid (0 = empty, 2^x = tile with value x)
     int64_t score; // current score
     int16_t empty; // number of empty tiles
 

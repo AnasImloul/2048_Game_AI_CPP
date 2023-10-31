@@ -22,14 +22,12 @@ grid::grid(const grid &g) {
     empty = g.empty;
 }
 
-grid::grid(int8_t tiles[SIZE][SIZE], int64_t score) {
+grid::grid(int8_t tiles[SIZE * SIZE], int64_t score) {
     memcpy(this->tiles, tiles, sizeof(this->tiles));
     this->score = score;
     empty = 0;
-    for (int i = 0; i < SIZE; i++) {
-        for (int j : tiles[i]) {
-            if (j == 0) empty++;
-        }
+    for (int i = 0; i < SIZE * SIZE; i++) {
+        if (tiles[i] == 0) empty++;
     }
 }
 
@@ -42,24 +40,21 @@ inline int length(long long n) {
     return count;
 }
 
-inline int maxLength(int8_t tiles[SIZE][SIZE]) {
+inline int maxLength(int8_t tiles[SIZE * SIZE]) {
     int result = 0;
-    for (int i = 0; i < SIZE; i++) {
-        for (int tile : tiles[i]) {
-            result = max(result, length(1 << tile));
-        }
+    for (int i = 0; i < SIZE * SIZE; i++) {
+        result = max(result, length(1 << tiles[i]));
     }
     return result;
 }
 
 void grid::show() {
     int maxLength1 = maxLength(tiles);
-    for (auto & tile : tiles) {
-        for (int j : tile) {
-            long long value = (j != 0 ? (1 << j) : 0);
+    for (int i = 0; i < SIZE; i++) {
+        for (int j = 0; j < SIZE; j++) {
+            long long value = (tiles[i * SIZE + j] != 0 ? (1 << tiles[i * SIZE + j]) : 0);
             std::cout << value << std::string(maxLength1 - length(value), ' ') << " ";
         }
-
         for (int i = 0; i < 1 + maxLength1 / 3; i++)
             std::cout << std::endl;
     }
@@ -75,8 +70,7 @@ bool grid::up() {
         bool merged = false;
         for (int row = 0; row < SIZE; row++) {
             // if the tile is empty, skip it
-            if (tiles[row][col] == 0) {
-                blocked = false;
+            if (tiles[row * SIZE + col] == 0) {
                 continue;
             }
 
@@ -84,18 +78,18 @@ bool grid::up() {
             if (last == -1) {
                 last = 0; // set the tile to the first one
                 if (row != 0) {
-                    tiles[last][col] = tiles[row][col];
-                    tiles[row][col] = 0;
+                    tiles[last * SIZE + col] = tiles[row * SIZE + col];
+                    tiles[row * SIZE + col] = 0;
                     blocked = false;
                 }
                 continue;
             }
 
             // if the tile is the same as the last one, merge them
-            if (tiles[last][col] == tiles[row][col] && !merged) {
-                tiles[last][col]++;
-                tiles[row][col] = 0;
-                score += (1 << tiles[last][col]);
+            if (tiles[last * SIZE + col] == tiles[row * SIZE + col] && !merged) {
+                tiles[last * SIZE + col]++;
+                tiles[row * SIZE + col] = 0;
+                score += (1 << tiles[last * SIZE + col]);
                 empty++;
                 blocked = false;
                 merged = true;
@@ -104,8 +98,8 @@ bool grid::up() {
 
             // if the tile is different from the last one, move it
             if (last + 1 != row) {
-                tiles[++last][col] = tiles[row][col];
-                tiles[row][col] = 0;
+                tiles[++last * SIZE + col] = tiles[row * SIZE + col];
+                tiles[row * SIZE + col] = 0;
                 blocked = false;
                 merged = false;
                 continue;
@@ -126,8 +120,7 @@ bool grid::down() {
         bool merged = false;
         for (int row = SIZE - 1; row >= 0; row--) {
             // if the tile is empty, skip it
-            if (tiles[row][col] == 0) {
-                blocked = false;
+            if (tiles[row * SIZE + col] == 0) {
                 continue;
             }
 
@@ -135,18 +128,18 @@ bool grid::down() {
             if (last == -1) {
                 last = SIZE - 1; // set the tile to the first one
                 if (row != SIZE - 1) {
-                    tiles[last][col] = tiles[row][col];
-                    tiles[row][col] = 0;
+                    tiles[last * SIZE + col] = tiles[row * SIZE + col];
+                    tiles[row * SIZE + col] = 0;
                     blocked = false;
                 }
                 continue;
             }
 
             // if the tile is the same as the last one, merge them
-            if (tiles[last][col] == tiles[row][col] && !merged) {
-                tiles[last][col]++;
-                tiles[row][col] = 0;
-                score += (1 << tiles[last][col]);
+            if (tiles[last * SIZE + col] == tiles[row * SIZE + col] && !merged) {
+                tiles[last * SIZE + col]++;
+                tiles[row * SIZE + col] = 0;
+                score += (1 << tiles[last * SIZE + col]);
                 empty++;
                 blocked = false;
                 merged = true;
@@ -155,8 +148,8 @@ bool grid::down() {
 
             // if the tile is different from the last one, move it
             if (last - 1 != row) {
-                tiles[--last][col] = tiles[row][col];
-                tiles[row][col] = 0;
+                tiles[--last * SIZE + col] = tiles[row * SIZE + col];
+                tiles[row * SIZE + col] = 0;
                 blocked = false;
                 merged = false;
                 continue;
@@ -177,8 +170,7 @@ bool grid::left() {
         bool merged = false;
         for (int col = 0; col < SIZE; col++) {
             // if the tile is empty, skip it
-            if (tiles[row][col] == 0) {
-                blocked = false;
+            if (tiles[row * SIZE + col] == 0) {
                 continue;
             }
 
@@ -186,18 +178,18 @@ bool grid::left() {
             if (last == -1) {
                 last = 0; // set the tile to the first one
                 if (col != 0) {
-                    tiles[row][last] = tiles[row][col];
-                    tiles[row][col] = 0;
+                    tiles[row * SIZE + last] = tiles[row * SIZE + col];
+                    tiles[row * SIZE + col] = 0;
                     blocked = false;
                 }
                 continue;
             }
 
             // if the tile is the same as the last one, merge them
-            if (tiles[row][last] == tiles[row][col] && !merged) {
-                tiles[row][last]++;
-                tiles[row][col] = 0;
-                score += (1 << tiles[last][col]);
+            if (tiles[row * SIZE + last] == tiles[row * SIZE + col] && !merged) {
+                tiles[row * SIZE + last]++;
+                tiles[row * SIZE + col] = 0;
+                score += (1 << tiles[row * SIZE + last]);
                 empty++;
                 blocked = false;
                 merged = true;
@@ -206,8 +198,8 @@ bool grid::left() {
 
             // if the tile is different from the last one, move it
             if (last + 1 != col) {
-                tiles[row][++last] = tiles[row][col];
-                tiles[row][col] = 0;
+                tiles[row * SIZE + ++last] = tiles[row * SIZE + col];
+                tiles[row * SIZE + col] = 0;
                 blocked = false;
                 merged = false;
                 continue;
@@ -228,8 +220,7 @@ bool grid::right() {
         bool merged = false;
         for (int col = SIZE - 1; col >= 0; col--) {
             // if the tile is empty, skip it
-            if (tiles[row][col] == 0) {
-                blocked = false;
+            if (tiles[row * SIZE + col] == 0) {
                 continue;
             }
 
@@ -237,18 +228,18 @@ bool grid::right() {
             if (last == -1) {
                 last = SIZE - 1; // set the tile to the first one
                 if (col != SIZE - 1) {
-                    tiles[row][last] = tiles[row][col];
-                    tiles[row][col] = 0;
+                    tiles[row * SIZE + last] = tiles[row * SIZE + col];
+                    tiles[row * SIZE + col] = 0;
                     blocked = false;
                 }
                 continue;
             }
 
             // if the tile is the same as the last one, merge them
-            if (tiles[row][last] == tiles[row][col] && !merged) {
-                tiles[row][last]++;
-                tiles[row][col] = 0;
-                score += (1 << tiles[last][col]);
+            if (tiles[row * SIZE + last] == tiles[row * SIZE + col] && !merged) {
+                tiles[row * SIZE + last]++;
+                tiles[row * SIZE + col] = 0;
+                score += (1 << tiles[row * SIZE + last]);
                 empty++;
                 blocked = false;
                 merged = true;
@@ -257,8 +248,8 @@ bool grid::right() {
 
             // if the tile is different from the last one, move it
             if (last - 1 != col) {
-                tiles[row][--last] = tiles[row][col];
-                tiles[row][col] = 0;
+                tiles[row * SIZE + --last] = tiles[row * SIZE + col];
+                tiles[row * SIZE + col] = 0;
                 blocked = false;
                 merged = false;
                 continue;
@@ -278,11 +269,8 @@ bool grid::add() {
     int8_t value = (int8_t)((rand() % 10 < 9) ? 1 : 2);
 
     for (int i = 0; i < SIZE * SIZE; i++) {
-        row = index / SIZE;
-        col = index % SIZE;
-
-        if (tiles[row][col] == 0) {
-            tiles[row][col] = value;
+        if (tiles[index] == 0) {
+            tiles[index] = value;
             empty--;
             return true;
         }

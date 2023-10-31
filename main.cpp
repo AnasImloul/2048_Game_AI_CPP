@@ -3,6 +3,8 @@
 #include "grid.h"
 #include "move.h"
 
+#pragma GCC optimize("O7")
+
 void fastIO() {
     std::ios_base::sync_with_stdio(false);
     std::cin.tie(nullptr);
@@ -17,8 +19,7 @@ int main() {
 
     int move;
     do {
-        int a = 0;
-        move = move::bestMove(g, 6);
+        move = move::bestMove(g, 8);
         g.move(move);
         g.show();
         std::cout << "Score: " << g.getScore() << std::endl;

@@ -8,12 +8,12 @@
 #include "grid.h"
 
 namespace move {
-    int bestMove(const grid &g, int depth);
+    int bestMove(grid &g, int depth);
 
-    inline int evaluate(const grid &g);
+    inline int64_t evaluate(grid &g);
 
     namespace {
-        int bestMoveHelper(const grid& g, int depth, int &bestScore, int &bestDir, int move);
+        void bestMoveHelper(grid& g, int depth, int64_t &bestScore, int &bestDir, int move, int& calls);
     }
 
 }
