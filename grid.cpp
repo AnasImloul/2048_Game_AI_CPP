@@ -6,12 +6,12 @@
 #include "cstring"
 #include "iostream"
 
+#define max(a, b) ((a) > (b) ? (a) : (b))
 
 grid::grid() {
     memset(tiles, 0, sizeof(tiles));
     score = 0;
     empty = SIZE * SIZE;
-    blocked = false;
     add();
     add();
 }
@@ -20,7 +20,6 @@ grid::grid(const grid &g) {
     memcpy(tiles, g.tiles, sizeof(tiles));
     score = g.score;
     empty = g.empty;
-    blocked = g.blocked;
 }
 
 grid::grid(int8_t tiles[SIZE][SIZE], int64_t score) {
@@ -32,22 +31,43 @@ grid::grid(int8_t tiles[SIZE][SIZE], int64_t score) {
             if (j == 0) empty++;
         }
     }
-    blocked = false;
+}
 
+inline int length(long long n) {
+    int count = 1;
+    while (n >= 10) {
+        count++;
+        n /= 10;
+    }
+    return count;
+}
+
+inline int maxLength(int8_t tiles[SIZE][SIZE]) {
+    int result = 0;
+    for (int i = 0; i < SIZE; i++) {
+        for (int tile : tiles[i]) {
+            result = max(result, length(1 << tile));
+        }
+    }
+    return result;
 }
 
 void grid::show() {
+    int maxLength1 = maxLength(tiles);
     for (auto & tile : tiles) {
         for (int j : tile) {
-            std::cout << (j != 0 ? 1 << j : 0) << " ";
+            long long value = (j != 0 ? (1 << j) : 0);
+            std::cout << value << std::string(maxLength1 - length(value), ' ') << " ";
         }
-        std::cout << std::endl;
+
+        for (int i = 0; i < 1 + maxLength1 / 3; i++)
+            std::cout << std::endl;
     }
     std::cout << std::endl;
 }
 
 bool grid::up() {
-    blocked = true; // if the grid is blocked, the game is over
+    bool blocked = true; // if the grid is blocked, the game is over
 
     for (int col = 0; col < SIZE; col++) {
 
@@ -98,7 +118,7 @@ bool grid::up() {
 }
 
 bool grid::down() {
-    blocked = true; // if the grid is blocked, the game is over
+    bool blocked = true; // if the grid is blocked, the game is over
 
     for (int col = 0; col < SIZE; col++) {
 
@@ -149,7 +169,7 @@ bool grid::down() {
 }
 
 bool grid::left() {
-    blocked = true; // if the grid is blocked, the game is over
+    bool blocked = true; // if the grid is blocked, the game is over
 
     for (int row = 0; row < SIZE; row++) {
 
@@ -200,7 +220,7 @@ bool grid::left() {
 }
 
 bool grid::right() {
-    blocked = true; // if the grid is blocked, the game is over
+    bool blocked = true; // if the grid is blocked, the game is over
 
     for (int row = 0; row < SIZE; row++) {
 
@@ -255,13 +275,14 @@ bool grid::add() {
     if (empty == 0) return false;
 
     int index = rand() % (SIZE * SIZE), row, col;
+    int8_t value = (int8_t)((rand() % 10 < 9) ? 1 : 2);
 
     for (int i = 0; i < SIZE * SIZE; i++) {
         row = index / SIZE;
         col = index % SIZE;
 
         if (tiles[row][col] == 0) {
-            tiles[row][col] = 1;
+            tiles[row][col] = value;
             empty--;
             return true;
         }
